@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Réserver un atelier Tricot</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="main-nav" style="padding:12px; text-align:center; background:#fff;">
+        <a href="sitevitrine.html">Accueil</a> |
+        <a href="ReservationCours.html">Réserver un coaching</a>
+    </nav>
+
+    <!-- HERO -->
+    <header class="hero">
+        <h1>Réserver un Atelier tricot</h1>
+        <p>
+         Horaires : <br>
+         Mardi : 14h-16h ; 16h30-18h30 <br>
+         Mercredi: /<br>
+         Jeudi: 14h-16h ; 16h30-18h30<br>
+         Vendredi:/ <br>
+         Samedi: 14h-16h ; 16h30-18h30<br>
+    pour plus d'informations Rendez vous en boutique 
+    
+        </p>
+    </header>
+    <div> </div>
+    <form id="reservationForm">
+    <div class="form-group">
+        <label>Nom</label>
+        <input type="text" name="nom" required>
+    </div>
+
+    <div class="form-group">
+        <label>Prénom</label>
+        <input type="text" name="prenom" required>
+    </div>
+
+    <div class="form-group">
+        <label>Email</label>
+        <input type="email" name="email" required>
+    </div>
+
+    <div class="form-group">
+        <label>Date et heure souhaitées</label>
+        <input type="datetime-local" name="date" required>
+    </div>
+
+    <div class="form-group">
+        <label>Message (optionnel)</label>
+        <textarea name="message" rows="4"></textarea>
+    </div>
+    
+    <div class="form-group" id="eventDateContainer" style="display:none;">
+        <label style="display:none">Event</label>
+        <a id="eventDateAnchor" href="#" target="_blank" rel="noopener" style="display:none">Ajouter à mon calendrier</a>
+        <input type="hidden" name="eventDate" id="eventDateInput" value="">
+    </div>
+
+    <button type="submit">Réserver</button>
+</form>
+<!-- SDK EmailJS v4 -->
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script type="text/javascript" src="reservationemailjsAtelier.js"></script>
+ <!-- FOOTER -->
+    <footer>
+        <p>© 2026 - Madame Tricote</p>
+    </footer>
+
+</body>
+</html>

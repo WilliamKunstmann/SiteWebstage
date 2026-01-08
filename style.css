@@ -1,0 +1,252 @@
+/* =========================
+   RESET & BASE
+========================= */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", Arial, sans-serif;
+    color: #333;
+    background-color: #fafafa;
+    line-height: 1.7;
+}
+
+/* =========================
+   HERO
+========================= */
+.hero {
+    background:
+        linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)),
+        url(".//IMG/Boutiquefacade.jpeg");
+    background-size: cover;
+    background-position: center;
+
+    color: white;
+    text-align: center;
+    padding: 100px 20px;
+}
+
+.hero h1 {
+    font-size: 2.8rem;
+    letter-spacing: 1px;
+    margin-bottom: 15px;
+}
+
+.hero p {
+    max-width: 700px;
+    margin: auto;
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+/* =========================
+   BLOCS (QUINCONCE)
+========================= */
+.bloc {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    padding: 60px 10%;
+    background-color: white;
+    margin: 60px auto;
+    max-width: 1200px;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+    transition: transform 0.3s ease;
+}
+
+/* Décalage léger en quinconce */
+.bloc:nth-child(odd) {
+    transform: translateX(-30px);
+}
+
+.bloc:nth-child(even) {
+    transform: translateX(30px);
+}
+
+/* Image */
+.bloc img {
+    width: 40%;
+    max-width: 380px;
+    border-radius: 10px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+    transition: transform 0.3s ease;
+}
+
+.bloc img:hover {
+    transform: scale(1.03);
+}
+
+/* Texte */
+.bloc .texte {
+    width: 60%;
+}
+
+.bloc h2 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #222;
+}
+
+.bloc p {
+    color: #555;
+}
+
+/* Inversion image / texte */
+.bloc.inverse {
+    flex-direction: row-reverse;
+}
+
+/* =========================
+   FOOTER
+========================= */
+footer {
+    background-color: #222;
+    color: #ccc;
+    text-align: center;
+    padding: 25px;
+    margin-top: 60px;
+    font-size: 0.9rem;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 768px) {
+    .bloc,
+    .bloc.inverse {
+        flex-direction: column;
+        text-align: center;
+        transform: translateX(0);
+    }
+
+    .bloc img,
+    .bloc .texte {
+        width: 100%;
+    }
+
+    .hero {
+        padding: 60px 12px;
+    }
+
+    .hero h1 {
+        font-size: 2.2rem;
+    }
+
+    /* responsive form and nav tweaks */
+    form#reservationForm { padding: 16px; margin: 20px; }
+    .main-nav { padding: 10px; }
+    .main-nav a { padding: 8px 10px; display:inline-block; }
+    .map-container { height: 260px; }
+}
+/* =========================
+   CARTE
+========================= */
+.map-section {
+    max-width: 1200px;
+    margin: 80px auto;
+    padding: 0 10%;
+    text-align: center;
+}
+
+.map-section h2 {
+    margin-bottom: 25px;
+    color: #222;
+}
+
+.map-container {
+    width: 100%;
+    height: 400px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+}
+
+.map-container iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+/* =========================
+   NAVIGATION
+========================= */
+.main-nav {
+    background: #fff;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+.main-nav a {
+    color: #222;
+    text-decoration: none;
+    padding: 10px 14px;
+    display: inline-block;
+    font-weight: 600;
+}
+.main-nav a:hover {
+    background: rgba(0,0,0,0.04);
+    border-radius: 6px;
+}
+
+/* =========================
+   FORMS
+========================= */
+form#reservationForm {
+    max-width: 760px;
+    margin: 40px auto;
+    background: #fff;
+    padding: 22px;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+}
+.form-group {
+    margin-bottom: 14px;
+}
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: #333;
+}
+input[type="text"],
+input[type="email"],
+input[type="datetime-local"],
+textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    outline: none;
+}
+textarea { min-height: 100px; }
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="datetime-local"]:focus,
+textarea:focus {
+    border-color: #bfbfbf;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+}
+.forfait-options label {
+    margin-right: 12px;
+    font-weight: 500;
+}
+
+button[type="submit"] {
+    background: #222;
+    color: #fff;
+    border: 0;
+    padding: 10px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 700;
+}
+button[type="submit"]:hover {
+    opacity: 0.95;
+}
+
+@media (max-width: 600px) {
+    form#reservationForm { padding: 16px; margin: 20px; }
+    .main-nav a { padding: 8px 10px; }
+}
