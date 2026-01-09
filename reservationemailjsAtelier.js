@@ -5,6 +5,30 @@ document.addEventListener('DOMContentLoaded', function () {
     emailjs.init("hB67gvSWDEIYZe80n");
     console.log('emailjs initialized');
 
+    // --- Simple local availability tracking (client-side only) ---
+    // NOTE: This uses localStorage and is not suitable as authoritative
+    // server-side booking; use a server DB/webhook for production.
+    const ATELIER_STORAGE_KEY = 'atelier_bookings';
+
+    function readAtelierBookings() {
+        try {
+            return JSON.parse(localStorage.getItem(ATELIER_STORAGE_KEY) || '{}');
+        } catch (e) {
+            return {};
+        }
+    }
+
+    function writeAtelierBookings(obj) {
+        localStorage.setItem(ATELIER_STORAGE_KEY, JSON.stringify(obj));
+    }
+
+    function getAtelierDayKey(d) {
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`; // YYYY-MM-DD
+    }
+
     const form = document.getElementById("reservationForm");
     if (!form) {
         console.error('reservationForm not found in DOM');
@@ -75,6 +99,21 @@ document.addEventListener('DOMContentLoaded', function () {
         const dateValue = this.date.value; // e.g. "2026-01-08T14:30"
         const message = this.message.value || '';
         const forfait = (this.querySelector('input[name="forfait"]:checked') || {}).value || '';
+
+        // Availability check: max 4 persons per day for ateliers
+        if (dateValue) {
+            const start = new Date(dateValue);
+            const dayKey = getAtelierDayKey(start);
+            const bookings = readAtelierBookings();
+            const current = bookings[dayKey] || 0;
+            if (current >= 4) {
+                alert('Désolé, les ateliers pour ce jour sont complets (4 places).');
+                return;
+            }
+            // reserve locally (note: no server persistence)
+            bookings[dayKey] = current + 1;
+            writeAtelierBookings(bookings);
+        }
 
         let eventLink = '';
         let icsDataUrl = '';

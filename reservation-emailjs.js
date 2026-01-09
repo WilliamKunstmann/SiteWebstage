@@ -5,6 +5,83 @@ document.addEventListener('DOMContentLoaded', function () {
     emailjs.init("hB67gvSWDEIYZe80n");
     console.log('emailjs initialized');
 
+    // --- Payment helpers ---
+    // Map forfait labels to amounts in cents (EUR)
+    const PRICE_MAP = {
+        '1 mois': 2000,   // 20.00 EUR
+        '6 mois': 8000,   // 80.00 EUR
+        '1 an': 12000     // 120.00 EUR
+    };
+
+    function getAmountForForfait(forfait) {
+        return PRICE_MAP[forfait] || 0;
+    }
+
+    // Initiate Stripe Checkout (requires a server endpoint to create a Checkout Session)
+    // Server must POST to /create-checkout-session with { amount, forfait, customerEmail }
+    // and return JSON { id: '<checkout_session_id>' }.
+    async function initiateStripeCheckout(forfait, amount, customerEmail) {
+        if (!amount) {
+            alert('Montant invalide pour le forfait sélectionné.');
+            return;
+        }
+
+        // Replace with your publishable key
+        const stripe = Stripe('pk_test_YOUR_PUBLISHABLE_KEY');
+
+        try {
+            const res = await fetch('/create-checkout-session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ amount: amount, forfait: forfait, customerEmail: customerEmail })
+            });
+
+            if (!res.ok) {
+                const txt = await res.text();
+                console.error('Failed creating checkout session:', res.status, txt);
+                alert('Impossible de créer la session de paiement. Réessayez plus tard.');
+                return;
+            }
+
+            const data = await res.json();
+            if (!data.id) {
+                console.error('Invalid checkout session response:', data);
+                alert('Réponse de paiement invalide.');
+                return;
+            }
+
+            await stripe.redirectToCheckout({ sessionId: data.id });
+        } catch (err) {
+            console.error('initiateStripeCheckout error:', err);
+            alert('Erreur lors du démarrage du paiement.');
+        }
+    }
+
+    // --- Simple local availability tracking for cours (client-side only) ---
+    // NOTE: this uses localStorage and is not authoritative. For production,
+    // check availability on the server.
+    const COURS_STORAGE_KEY = 'cours_bookings';
+
+    function readCoursBookings() {
+        try {
+            return JSON.parse(localStorage.getItem(COURS_STORAGE_KEY) || '{}');
+        } catch (e) {
+            return {};
+        }
+    }
+
+    function writeCoursBookings(obj) {
+        localStorage.setItem(COURS_STORAGE_KEY, JSON.stringify(obj));
+    }
+
+    function getCoursHourKey(d) {
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const hh = String(d.getHours()).padStart(2, '0');
+        return `${y}-${m}-${day}T${hh}:00`; // YYYY-MM-DDTHH:00 (local)
+    }
+
     const form = document.getElementById("reservationForm");
     if (!form) {
         console.error('reservationForm not found in DOM');
@@ -59,6 +136,43 @@ document.addEventListener('DOMContentLoaded', function () {
 
     form.addEventListener("submit", function (e) {
         e.preventDefault();
+        // If user chose to pay now, start Stripe Checkout flow and stop here.
+        try {
+            const payNowCheckbox = document.getElementById('payNow');
+            const payNow = payNowCheckbox && payNowCheckbox.checked;
+            if (payNow) {
+                const forfait = (this.querySelector('input[name="forfait"]:checked') || {}).value || '';
+                const amount = getAmountForForfait(forfait);
+                const customerEmail = this.email ? this.email.value : '';
+                if (!forfait) {
+                    alert('Veuillez choisir un forfait avant de payer.');
+                    return;
+                }
+                // availability check: cours limited to 1 person per hour (client-side)
+                const dateVal = this.date ? this.date.value : '';
+                if (!dateVal) {
+                    alert('Veuillez choisir une date/heure pour le coaching.');
+                    return;
+                }
+                const start = new Date(dateVal);
+                const hourKey = getCoursHourKey(start);
+                const bookings = readCoursBookings();
+                const current = bookings[hourKey] || 0;
+                if (current >= 1) {
+                    alert('Désolé, un coaching est déjà réservé pour cette heure. Choisissez une autre heure.');
+                    return;
+                }
+                // reserve locally (note: no server persistence)
+                bookings[hourKey] = current + 1;
+                writeCoursBookings(bookings);
+
+                // Redirect to Stripe Checkout. Note: a server endpoint is required to create the session.
+                initiateStripeCheckout(forfait, amount, customerEmail);
+                return; // do not send EmailJS here; send confirmation after payment on server or on success return URL
+            }
+        } catch (err) {
+            console.warn('Payment branch failed, continuing to send email:', err);
+        }
         function toUTCICS(date) {
             const y = date.getUTCFullYear();
             const m = String(date.getUTCMonth() + 1).padStart(2, '0');
@@ -75,6 +189,21 @@ document.addEventListener('DOMContentLoaded', function () {
         const dateValue = this.date.value; // e.g. "2026-01-08T14:30"
         const message = this.message.value || '';
         const forfait = (this.querySelector('input[name="forfait"]:checked') || {}).value || '';
+
+        // Availability check for cours (1 person per hour) before sending email
+        if (dateValue) {
+            const start = new Date(dateValue);
+            const hourKey = getCoursHourKey(start);
+            const bookings = readCoursBookings();
+            const current = bookings[hourKey] || 0;
+            if (current >= 1) {
+                alert('Désolé, un coaching est déjà réservé pour cette heure. Choisissez une autre heure.');
+                return;
+            }
+            // reserve locally (note: no server persistence)
+            bookings[hourKey] = current + 1;
+            writeCoursBookings(bookings);
+        }
 
         let eventLink = '';
         let icsDataUrl = '';
